@@ -2,9 +2,9 @@ package org.vaadin.binarycodes.durationpicker;
 
 
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.util.Optional;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.customfield.CustomField;
@@ -13,26 +13,56 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.TextField;
 
 public class DurationPicker extends CustomField<Duration> {
-    private static final String DURATION_PATTERN_REGEX = "(?:(\\d+)d)?(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?(\\d+)?";
-    private static final Pattern DURATION_PATTERN = Pattern.compile(DURATION_PATTERN_REGEX);
 
-    private Duration duration;
+
+    /* configurations */
+    private final List<DurationUnit> units;
+    private final int hourInterval;
+    private final int minuteInterval;
+    private final int secondsInterval;
+
+    /* the eventual value of this field */
+    private DurationData value;
 
     public DurationPicker() {
-        reset();
+        this(1, 1, 1, Arrays.asList(DurationUnit.values()));
+    }
+
+    public DurationPicker(DurationUnit... units) {
+        this(1, 1, 1, Arrays.asList(units));
+    }
+
+    private DurationPicker(int hourInterval, int minuteInterval, int secondsInterval, List<DurationUnit> units) {
+        this.hourInterval = hourInterval;
+        this.minuteInterval = minuteInterval;
+        this.secondsInterval = secondsInterval;
+        this.units = units;
+
+        this.value = new DurationData();
         initView();
     }
 
     private void initView() {
         var field = new TextField("Duration");
         field.setAllowedCharPattern("[0-9hdms]");
-        field.addValueChangeListener(event -> {
-            parseDurationString(event.getValue());
-        });
+        field.addValueChangeListener(event -> this.value = new DurationData(event.getValue()));
 
-        var popupButton = new Button(VaadinIcon.TIMER.create(), event -> {
-            field.setReadOnly(true);
-            Notification.show("open popup button");
+        var popupButton = new Button(VaadinIcon.TIMER.create(), clickEvent -> {
+
+            var dialog = new DurationPickerDialog(value, units, hourInterval, minuteInterval, secondsInterval);
+            dialog.open();
+
+            var registration = dialog.addDialogCloseEventListener(event -> {
+                value = event.getValue();
+                field.setValue(value.toString());
+                Notification.show("Received: " + value);
+            });
+
+            dialog.addOpenedChangeListener(event -> {
+                field.setReadOnly(event.isOpened());
+            });
+
+
         });
         field.setSuffixComponent(popupButton);
 
@@ -41,59 +71,67 @@ public class DurationPicker extends CustomField<Duration> {
 
     @Override
     protected Duration generateModelValue() {
-        return duration;
+        return value.getDuration();
     }
 
     @Override
     protected void setPresentationValue(Duration duration) {
-        var days = duration.get(ChronoUnit.DAYS);
-        var hours = duration.get(ChronoUnit.HOURS);
-        var minutes = duration.get(ChronoUnit.MINUTES);
-        var seconds = duration.get(ChronoUnit.SECONDS);
-
-        this.duration = Duration.ofDays(days).plusHours(hours).plusMinutes(minutes).plusSeconds(seconds);
+        this.value = new DurationData(duration);
     }
 
+    public static class Builder {
+        private final List<DurationUnit> units;
+        private int hourInterval;
+        private int minuteInterval;
+        private int secondsInterval;
 
-    private void parseDurationString(String value) {
-        /* reset previous value if any */
-        reset();
-
-        var matcher = DURATION_PATTERN.matcher(value);
-
-        if (matcher.matches()) {
-            var wrapper = new Object() {
-                ChronoUnit unmatchedUnit = null;
-            };
-
-            processMatchedGroup(matcher.group(1), DurationUnit.DAYS).ifPresent(u -> wrapper.unmatchedUnit = u);
-            processMatchedGroup(matcher.group(2), DurationUnit.HOURS).ifPresent(u -> wrapper.unmatchedUnit = u);
-            processMatchedGroup(matcher.group(3), DurationUnit.MINUTES).ifPresent(u -> wrapper.unmatchedUnit = u);
-            processMatchedGroup(matcher.group(4), DurationUnit.SECONDS).ifPresent(u -> wrapper.unmatchedUnit = u);
-
-            /* handle the optional last number */
-            if (matcher.group(5) != null) {
-                if (wrapper.unmatchedUnit != null) {
-                    var lastMatchedValue = Integer.parseInt(matcher.group(5));
-                    duration = duration.plus(lastMatchedValue, wrapper.unmatchedUnit);
-                } else {
-                    /* not expecting value without unit here */
-                    reset();
-                }
-            }
+        public Builder() {
+            units = new ArrayList<>();
+            hourInterval = 1;
+            minuteInterval = 1;
+            secondsInterval = 1;
         }
-    }
 
-    private Optional<ChronoUnit> processMatchedGroup(String matchedValue, DurationUnit unit) {
-        if (matchedValue != null) {
-            var value = Integer.parseInt(matchedValue);
-            duration = duration.plus(value, unit.getChronoUnit());
-            return unit.getNextUnmatchedUnit();
+        public Builder days() {
+            this.units.add(DurationUnit.DAYS);
+            return this;
         }
-        return Optional.empty();
-    }
 
-    private void reset() {
-        duration = Duration.ofSeconds(0);
+        public Builder hours() {
+            this.units.add(DurationUnit.HOURS);
+            return this;
+        }
+
+        public Builder hours(int interval) {
+            this.units.add(DurationUnit.HOURS);
+            this.hourInterval = interval;
+            return this;
+        }
+
+        public Builder minutes() {
+            this.units.add(DurationUnit.MINUTES);
+            return this;
+        }
+
+        public Builder minutes(int interval) {
+            this.units.add(DurationUnit.MINUTES);
+            this.minuteInterval = interval;
+            return this;
+        }
+
+        public Builder seconds() {
+            this.units.add(DurationUnit.SECONDS);
+            return this;
+        }
+
+        public Builder seconds(int interval) {
+            this.units.add(DurationUnit.SECONDS);
+            this.secondsInterval = interval;
+            return this;
+        }
+
+        public DurationPicker build() {
+            return new DurationPicker(hourInterval, minuteInterval, secondsInterval, units);
+        }
     }
 }
