@@ -17,7 +17,7 @@ import com.vaadin.flow.router.RouterLayout;
 @Route(value = "durationPicker")
 @RouteAlias(value = "")
 public class DurationPickerView extends VerticalLayout implements RouterLayout {
-    
+
     public DurationPickerView() {
         Stream.of(
                 new DurationPicker(),

@@ -2,7 +2,6 @@ package org.vaadin.binarycodes.durationpicker;
 
 
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
@@ -77,14 +76,6 @@ public class DurationPickerPopupView extends FlexLayout {
             field.setMax(max);
         }
 
-        field.addKeyPressListener(event -> {
-            if (event.getKey() == Key.ARROW_UP) {
-                field.setValue(field.getValue() + field.getStep());
-            } else if (event.getKey() == Key.ARROW_DOWN) {
-                field.setValue(field.getValue() - field.getStep());
-            }
-        });
-
         field.getElement().addEventListener("mouseWheelUp", event -> {
             var updatedValue = field.getValue() + field.getStep();
             if (updatedValue >= field.getMin() && updatedValue <= field.getMax()) {
@@ -106,7 +97,7 @@ public class DurationPickerPopupView extends FlexLayout {
                     if (event.deltaY < 0) { // Mouse wheel up
                        field.dispatchEvent(new Event('mouseWheelUp'));
                     } else { // Mouse wheel down
-                        field.dispatchEvent(new Event('mouseWheelDown'));
+                       field.dispatchEvent(new Event('mouseWheelDown'));
                     }
                 });
                 """;

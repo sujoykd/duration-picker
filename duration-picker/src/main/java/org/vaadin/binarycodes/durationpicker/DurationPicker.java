@@ -73,6 +73,7 @@ public class DurationPicker extends CustomField<Duration> {
         this.popupCloseRegistration = popup.addPopupOpenChangedEventListener(event -> {
             value = dialog.getValue();
             field.setValue(value.toString());
+            updateValue();
         });
     }
 
