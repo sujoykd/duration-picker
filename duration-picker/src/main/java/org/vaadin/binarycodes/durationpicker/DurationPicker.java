@@ -2,9 +2,7 @@ package org.vaadin.binarycodes.durationpicker;
 
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 import com.vaadin.componentfactory.Popup;
@@ -18,10 +16,7 @@ import com.vaadin.flow.shared.Registration;
 public class DurationPicker extends CustomField<Duration> {
 
     /* configurations */
-    private final List<DurationUnit> units;
-    private final int hourInterval;
-    private final int minuteInterval;
-    private final int secondsInterval;
+    private final Configuration configuration;
 
     private final String textFieldId;
     private final Popup popup;
@@ -31,18 +26,15 @@ public class DurationPicker extends CustomField<Duration> {
     private DurationData value;
 
     public DurationPicker() {
-        this(1, 1, 1, Arrays.asList(DurationUnit.values()));
+        this(new Configuration(Arrays.asList(DurationUnit.values())));
     }
 
-    public DurationPicker(DurationUnit... units) {
-        this(1, 1, 1, Arrays.asList(units));
+    public DurationPicker(final DurationUnit... units) {
+        this(new Configuration(Arrays.asList(units)));
     }
 
-    private DurationPicker(int hourInterval, int minuteInterval, int secondsInterval, List<DurationUnit> units) {
-        this.hourInterval = hourInterval;
-        this.minuteInterval = minuteInterval;
-        this.secondsInterval = secondsInterval;
-        this.units = units;
+    private DurationPicker(final Configuration configuration) {
+        this.configuration = configuration;
 
         this.value = new DurationData();
         this.textFieldId = UUID.randomUUID().toString();
@@ -74,7 +66,7 @@ public class DurationPicker extends CustomField<Duration> {
             this.popupCloseRegistration.remove();
         }
 
-        var dialog = new DurationPickerPopupView(value, units, hourInterval, minuteInterval, secondsInterval);
+        var dialog = new DurationPickerPopupView(value, configuration);
         this.popup.add(dialog);
         this.popup.show();
 
@@ -95,58 +87,60 @@ public class DurationPicker extends CustomField<Duration> {
     }
 
     public static class Builder {
-        private final List<DurationUnit> units;
-        private int hourInterval;
-        private int minuteInterval;
-        private int secondsInterval;
+        private final Configuration configuration;
 
         public Builder() {
-            units = new ArrayList<>();
-            hourInterval = 1;
-            minuteInterval = 1;
-            secondsInterval = 1;
+            configuration = new Configuration();
         }
 
         public Builder days() {
-            this.units.add(DurationUnit.DAYS);
+            this.configuration.addUnit(DurationUnit.DAYS);
             return this;
         }
 
         public Builder hours() {
-            this.units.add(DurationUnit.HOURS);
+            this.configuration.addUnit(DurationUnit.HOURS);
             return this;
         }
 
         public Builder hours(int interval) {
-            this.units.add(DurationUnit.HOURS);
-            this.hourInterval = interval;
+            this.configuration.addUnit(DurationUnit.HOURS);
+            this.configuration.setHourInterval(interval);
             return this;
         }
 
         public Builder minutes() {
-            this.units.add(DurationUnit.MINUTES);
+            this.configuration.addUnit(DurationUnit.MINUTES);
             return this;
         }
 
         public Builder minutes(int interval) {
-            this.units.add(DurationUnit.MINUTES);
-            this.minuteInterval = interval;
+            this.configuration.addUnit(DurationUnit.MINUTES);
+            this.configuration.setMinuteInterval(interval);
             return this;
         }
 
         public Builder seconds() {
-            this.units.add(DurationUnit.SECONDS);
+            this.configuration.addUnit(DurationUnit.SECONDS);
             return this;
         }
 
         public Builder seconds(int interval) {
-            this.units.add(DurationUnit.SECONDS);
-            this.secondsInterval = interval;
+            this.configuration.addUnit(DurationUnit.SECONDS);
+            this.configuration.setSecondsInterval(interval);
+            return this;
+        }
+
+        public Builder customLabels(String daysLabel, String hoursLabel, String minutesLabel, String secondsLabel) {
+            this.configuration.setDaysLabel(daysLabel);
+            this.configuration.setHoursLabel(hoursLabel);
+            this.configuration.setMinutesLabel(minutesLabel);
+            this.configuration.setSecondsLabel(secondsLabel);
             return this;
         }
 
         public DurationPicker build() {
-            return new DurationPicker(hourInterval, minuteInterval, secondsInterval, units);
+            return new DurationPicker(configuration);
         }
     }
 }

@@ -1,8 +1,6 @@
 package org.vaadin.binarycodes.durationpicker;
 
 
-import java.util.List;
-
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
@@ -16,23 +14,18 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 @CssImport("./styles/duration-picker-popup-view.css")
 public class DurationPickerPopupView extends FlexLayout {
 
-    private final List<DurationUnit> durationUnits;
-    private final int hourInterval;
-    private final int minuteInterval;
-    private final int secondsInterval;
+    private final Configuration configuration;
 
     private final Binder<DurationData> binder;
 
     private final FlexLayout wrapper;
 
-    public DurationPickerPopupView(DurationData durationData, List<DurationUnit> durationUnits, int hourInterval, int minuteInterval, int secondsInterval) {
-        this.durationUnits = durationUnits;
-        this.hourInterval = hourInterval;
-        this.minuteInterval = minuteInterval;
-        this.secondsInterval = secondsInterval;
+
+    public DurationPickerPopupView(DurationData value, Configuration configuration) {
+        this.configuration = configuration;
 
         this.binder = new Binder<>(DurationData.class);
-        this.binder.setBean(durationData);
+        this.binder.setBean(value);
 
         this.wrapper = new FlexLayout();
         this.wrapper.addClassNames(LumoUtility.Gap.MEDIUM);
@@ -46,30 +39,35 @@ public class DurationPickerPopupView extends FlexLayout {
     }
 
     private void init() {
+        var durationUnits = configuration.getUnits().stream().sorted().toList();
+
         if (durationUnits.contains(DurationUnit.DAYS)) {
-            var field = addInputField("DD", 1);
+            var field = addInputField(configuration.getDaysLabel(), 1, 0);
             binder.forField(field).withConverter(new IntegerToLongConverter()).bind(DurationData::getDays, DurationData::setDays);
         }
         if (durationUnits.contains(DurationUnit.HOURS)) {
-            var field = addInputField("HH", this.hourInterval);
+            var field = addInputField(configuration.getHoursLabel(), configuration.getHourInterval(), 0);
             binder.forField(field).withConverter(new IntegerToLongConverter()).bind(DurationData::getHours, DurationData::setHours);
         }
         if (durationUnits.contains(DurationUnit.MINUTES)) {
-            var field = addInputField("MI", this.minuteInterval);
+            var field = addInputField(configuration.getMinutesLabel(), configuration.getMinuteInterval(), 0);
             binder.forField(field).withConverter(new IntegerToLongConverter()).bind(DurationData::getMinutes, DurationData::setMinutes);
         }
         if (durationUnits.contains(DurationUnit.SECONDS)) {
-            var field = addInputField("S", this.secondsInterval);
+            var field = addInputField(configuration.getSecondsLabel(), configuration.getSecondsInterval(), 0);
             binder.forField(field).withConverter(new IntegerToLongConverter()).bind(DurationData::getSeconds, DurationData::setSeconds);
         }
     }
 
-    private IntegerField addInputField(String label, int interval) {
+    private IntegerField addInputField(String label, int interval, int max) {
         var field = new IntegerField(label);
         field.addThemeNames("duration-picker");
         field.setStepButtonsVisible(true);
         field.setStep(interval);
         field.setMin(0);
+        if (max > 0) {
+            field.setMax(max);
+        }
 
         field.addKeyPressListener(event -> {
             if (event.getKey() == Key.ARROW_UP) {

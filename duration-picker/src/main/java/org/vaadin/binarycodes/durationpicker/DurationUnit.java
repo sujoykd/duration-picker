@@ -4,20 +4,26 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 public enum DurationUnit {
-    DAYS(ChronoUnit.DAYS),
-    HOURS(ChronoUnit.HOURS),
-    MINUTES(ChronoUnit.MINUTES),
-    SECONDS(ChronoUnit.SECONDS);
+    DAYS(ChronoUnit.DAYS, 0),
+    HOURS(ChronoUnit.HOURS, 24),
+    MINUTES(ChronoUnit.MINUTES, 60),
+    SECONDS(ChronoUnit.SECONDS, 60);
 
     private static final DurationUnit[] staticValues = values();
     private final ChronoUnit chronoUnit;
+    private final int max;
 
-    DurationUnit(ChronoUnit chronoUnit) {
+    DurationUnit(ChronoUnit chronoUnit, int max) {
         this.chronoUnit = chronoUnit;
+        this.max = max;
     }
 
     public ChronoUnit getChronoUnit() {
         return chronoUnit;
+    }
+
+    public int getMax() {
+        return max;
     }
 
     public Optional<ChronoUnit> getNextUnmatchedUnit() {
