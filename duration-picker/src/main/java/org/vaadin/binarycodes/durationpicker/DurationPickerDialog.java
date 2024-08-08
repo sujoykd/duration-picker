@@ -4,11 +4,15 @@ package org.vaadin.binarycodes.durationpicker;
 import java.util.List;
 
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 
+@CssImport("./styles/duration-picker-dialog.css")
 public class DurationPickerDialog extends Dialog {
 
     private final List<DurationUnit> durationUnits;
@@ -18,6 +22,8 @@ public class DurationPickerDialog extends Dialog {
 
     private final Binder<DurationData> binder;
 
+    private FlexLayout wrapper;
+
     public DurationPickerDialog(DurationData durationData, List<DurationUnit> durationUnits, int hourInterval, int minuteInterval, int secondsInterval) {
         this.durationUnits = durationUnits;
         this.hourInterval = hourInterval;
@@ -26,6 +32,10 @@ public class DurationPickerDialog extends Dialog {
 
         this.binder = new Binder<>(DurationData.class);
         this.binder.setBean(durationData);
+
+        this.wrapper = new FlexLayout();
+        this.wrapper.addClassNames(LumoUtility.Gap.MEDIUM);
+        this.add(this.wrapper);
 
         init();
 
@@ -57,12 +67,12 @@ public class DurationPickerDialog extends Dialog {
 
     private IntegerField addInputField(String label, int interval) {
         var field = new IntegerField(label);
-        field.setThemeName("duration-picker");
+        field.addThemeNames("duration-picker");
         field.setStepButtonsVisible(true);
         field.setStep(interval);
         field.setMin(0);
 
-        add(field);
+        this.wrapper.add(field);
 
         return field;
     }

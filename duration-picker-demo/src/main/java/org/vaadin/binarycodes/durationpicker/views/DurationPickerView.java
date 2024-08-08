@@ -16,16 +16,36 @@ import com.vaadin.flow.router.RouterLayout;
 @RouteAlias(value = "")
 public class DurationPickerView extends VerticalLayout implements RouterLayout {
 
-    private final Binder<DataBean> binder;
-    private final DataBean data;
 
     public DurationPickerView() {
-        data = new DataBean();
+        allFields();
+        onlyHourMinuteSeconds();
+    }
+
+    private void allFields() {
+        var data = new DataBean();
 
         var durationPicker = new DurationPicker();
 
+        var binder = new Binder<DataBean>();
+        binder.forField(durationPicker)
+                .asRequired()
+                .bind(DataBean::getDuration, DataBean::setDuration);
+        binder.setBean(data);
 
-        binder = new Binder<>();
+        var button = new Button("Click me", event -> {
+            Notification.show(data.getDuration().toString());
+        });
+
+        add(durationPicker, button);
+    }
+
+    private void onlyHourMinuteSeconds() {
+        var data = new DataBean();
+
+        var durationPicker = new DurationPicker.Builder().hours().minutes().seconds().build();
+
+        var binder = new Binder<DataBean>();
         binder.forField(durationPicker)
                 .asRequired()
                 .bind(DataBean::getDuration, DataBean::setDuration);
