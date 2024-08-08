@@ -1,0 +1,13 @@
+vaadin-integer-field[theme~='duration-picker'] {
+    --vaadin-field-default-width: 2.5rem;
+}
+
+vaadin-integer-field[theme~='duration-picker']::part(input-field) {
+    flex-direction: column-reverse;
+}
+
+vaadin-integer-field[theme~='duration-picker']::part(label) {
+    padding-inline: 0;
+    width: 100%;
+    text-align: center;
+}

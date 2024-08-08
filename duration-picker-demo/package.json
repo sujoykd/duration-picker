@@ -4,6 +4,7 @@
   "type": "module",
   "dependencies": {
     "@polymer/polymer": "3.5.1",
+    "@vaadin-component-factory/vcf-popup": "24.0.3",
     "@vaadin/bundles": "24.4.4",
     "@vaadin/common-frontend": "0.0.19",
     "@vaadin/polymer-legacy-adapter": "24.4.4",
@@ -58,11 +59,13 @@
     "@vaadin/react-components": "$@vaadin/react-components",
     "react-dom": "$react-dom",
     "react-router-dom": "$react-router-dom",
-    "react": "$react"
+    "react": "$react",
+    "@vaadin-component-factory/vcf-popup": "$@vaadin-component-factory/vcf-popup"
   },
   "vaadin": {
     "dependencies": {
       "@polymer/polymer": "3.5.1",
+      "@vaadin-component-factory/vcf-popup": "24.0.3",
       "@vaadin/bundles": "24.4.4",
       "@vaadin/common-frontend": "0.0.19",
       "@vaadin/polymer-legacy-adapter": "24.4.4",
@@ -100,6 +103,6 @@
       "workbox-core": "7.1.0",
       "workbox-precaching": "7.1.0"
     },
-    "hash": "65837faacf23d805f54d864cb800e210f3228fec87f4dfba02ee99613406d6de"
+    "hash": "33c000c110c1b51bafef2cb2dad8da6d85a9099928b6f253a59f4e6f645b72bc"
   }
 }

@@ -5,21 +5,27 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
+import com.vaadin.componentfactory.Popup;
+import com.vaadin.componentfactory.PopupPosition;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.customfield.CustomField;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.shared.Registration;
 
 public class DurationPicker extends CustomField<Duration> {
-
 
     /* configurations */
     private final List<DurationUnit> units;
     private final int hourInterval;
     private final int minuteInterval;
     private final int secondsInterval;
+
+    private final String textFieldId;
+    private final Popup popup;
+    private Registration popupCloseRegistration;
 
     /* the eventual value of this field */
     private DurationData value;
@@ -39,34 +45,43 @@ public class DurationPicker extends CustomField<Duration> {
         this.units = units;
 
         this.value = new DurationData();
+        this.textFieldId = UUID.randomUUID().toString();
+
+        this.popup = new Popup();
+        this.popup.setFor(textFieldId);
+        this.popup.setPosition(PopupPosition.BOTTOM);
+        this.popup.setIgnoreTargetClick(true);
+        this.add(popup);
+
         initView();
     }
 
     private void initView() {
         var field = new TextField("Duration");
+        field.setId(textFieldId);
         field.setAllowedCharPattern("[0-9hdms]");
         field.addValueChangeListener(event -> this.value = new DurationData(event.getValue()));
 
-        var popupButton = new Button(VaadinIcon.TIMER.create(), clickEvent -> {
-
-            var dialog = new DurationPickerDialog(value, units, hourInterval, minuteInterval, secondsInterval);
-            dialog.open();
-
-            var registration = dialog.addDialogCloseEventListener(event -> {
-                value = event.getValue();
-                field.setValue(value.toString());
-                Notification.show("Received: " + value);
-            });
-
-            dialog.addOpenedChangeListener(event -> {
-                field.setReadOnly(event.isOpened());
-            });
-
-
-        });
+        var popupButton = new Button(VaadinIcon.CLOCK.create(), clickEvent -> onPopupOpen(field));
         field.setSuffixComponent(popupButton);
 
         add(field);
+    }
+
+    private void onPopupOpen(TextField field) {
+        this.popup.removeAll();
+        if (this.popupCloseRegistration != null) {
+            this.popupCloseRegistration.remove();
+        }
+
+        var dialog = new DurationPickerPopupView(value, units, hourInterval, minuteInterval, secondsInterval);
+        this.popup.add(dialog);
+        this.popup.show();
+
+        this.popupCloseRegistration = popup.addPopupOpenChangedEventListener(event -> {
+            value = dialog.getValue();
+            field.setValue(value.toString());
+        });
     }
 
     @Override

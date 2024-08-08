@@ -34,7 +34,11 @@ public class DurationPickerView extends VerticalLayout implements RouterLayout {
         binder.setBean(data);
 
         var button = new Button("Click me", event -> {
-            Notification.show(data.getDuration().toString());
+            if (data.getDuration() == null) {
+                Notification.show("Duration is null");
+            } else {
+                Notification.show(data.getDuration().toString());
+            }
         });
 
         add(durationPicker, button);
