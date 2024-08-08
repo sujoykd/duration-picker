@@ -41,21 +41,29 @@ public class DurationPickerPopupView extends FlexLayout {
     private void init() {
         var durationUnits = configuration.getUnits().stream().sorted().toList();
 
+        var allowUnlimited = true;
         if (durationUnits.contains(DurationUnit.DAYS)) {
             var field = addInputField(configuration.getDaysLabel(), 1, 0);
             binder.forField(field).withConverter(new IntegerToLongConverter()).bind(DurationData::getDays, DurationData::setDays);
+            allowUnlimited = false;
         }
         if (durationUnits.contains(DurationUnit.HOURS)) {
-            var field = addInputField(configuration.getHoursLabel(), configuration.getHourInterval(), 0);
+            var max = allowUnlimited ? 0 : DurationUnit.HOURS.getMax();
+            var field = addInputField(configuration.getHoursLabel(), configuration.getHourInterval(), max);
             binder.forField(field).withConverter(new IntegerToLongConverter()).bind(DurationData::getHours, DurationData::setHours);
+            allowUnlimited = false;
         }
         if (durationUnits.contains(DurationUnit.MINUTES)) {
-            var field = addInputField(configuration.getMinutesLabel(), configuration.getMinuteInterval(), 0);
+            var max = allowUnlimited ? 0 : DurationUnit.MINUTES.getMax();
+            var field = addInputField(configuration.getMinutesLabel(), configuration.getMinuteInterval(), max);
             binder.forField(field).withConverter(new IntegerToLongConverter()).bind(DurationData::getMinutes, DurationData::setMinutes);
+            allowUnlimited = false;
         }
         if (durationUnits.contains(DurationUnit.SECONDS)) {
-            var field = addInputField(configuration.getSecondsLabel(), configuration.getSecondsInterval(), 0);
+            var max = allowUnlimited ? 0 : DurationUnit.SECONDS.getMax();
+            var field = addInputField(configuration.getSecondsLabel(), configuration.getSecondsInterval(), max);
             binder.forField(field).withConverter(new IntegerToLongConverter()).bind(DurationData::getSeconds, DurationData::setSeconds);
+            allowUnlimited = false;
         }
     }
 
@@ -77,22 +85,32 @@ public class DurationPickerPopupView extends FlexLayout {
             }
         });
 
-        // Define the JavaScript code using a text block
-        String jsCode = """
+        field.getElement().addEventListener("mouseWheelUp", event -> {
+            var updatedValue = field.getValue() + field.getStep();
+            if (updatedValue >= field.getMin() && updatedValue <= field.getMax()) {
+                field.setValue(updatedValue);
+            }
+        });
+
+        field.getElement().addEventListener("mouseWheelDown", event -> {
+            var updatedValue = field.getValue() - field.getStep();
+            if (updatedValue >= field.getMin() && updatedValue <= field.getMax()) {
+                field.setValue(updatedValue);
+            }
+        });
+
+        var dispatchMouseWheelEvents = """
                 const field = $0;
                 field.addEventListener('wheel', function(event) {
                     event.preventDefault(); // Prevent default scrolling
-                    const step = parseInt(field.step || 1);
-                    const currentValue = parseInt(field.value || 0);
                     if (event.deltaY < 0) { // Mouse wheel up
-                        field.value = currentValue + step;
+                       field.dispatchEvent(new Event('mouseWheelUp'));
                     } else { // Mouse wheel down
-                        field.value = Math.max(currentValue - step, 0);
+                        field.dispatchEvent(new Event('mouseWheelDown'));
                     }
-                    field.dispatchEvent(new Event('change')); // Fire change event
                 });
                 """;
-        UI.getCurrent().getPage().executeJs(jsCode, field.getElement());
+        UI.getCurrent().getPage().executeJs(dispatchMouseWheelEvents, field.getElement());
 
         this.wrapper.add(field);
 
