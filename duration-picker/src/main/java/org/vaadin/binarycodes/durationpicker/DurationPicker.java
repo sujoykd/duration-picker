@@ -26,6 +26,7 @@ public class DurationPicker extends CustomField<Duration> {
     private DurationData value;
 
     private TextField field;
+    private Button popupButton;
 
     public DurationPicker() {
         this(new Configuration(Arrays.asList(DurationUnit.values())));
@@ -53,7 +54,7 @@ public class DurationPicker extends CustomField<Duration> {
     private void initView() {
         this.field = new TextField("Duration");
         this.field.setId(textFieldId);
-       
+
         this.field.setAllowedCharPattern("[0-9hdms]");
         this.field.addValueChangeListener(event -> {
             var interimValue = new DurationData(configuration, event.getValue());
@@ -70,8 +71,8 @@ public class DurationPicker extends CustomField<Duration> {
             }
         });
 
-        var popupButton = new Button(VaadinIcon.CLOCK.create(), clickEvent -> onPopupOpen(field));
-        this.field.setSuffixComponent(popupButton);
+        this.popupButton = new Button(VaadinIcon.CLOCK.create(), clickEvent -> onPopupOpen(field));
+        this.field.setSuffixComponent(this.popupButton);
 
         add(field);
     }
@@ -105,6 +106,19 @@ public class DurationPicker extends CustomField<Duration> {
     @Override
     protected void setPresentationValue(Duration duration) {
         this.value = new DurationData(this.configuration, duration);
+    }
+
+    @Override
+    public void setReadOnly(boolean readOnly) {
+        super.setReadOnly(readOnly);
+        this.field.setReadOnly(readOnly);
+        this.popupButton.setEnabled(!readOnly);
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        this.field.setEnabled(enabled);
     }
 
     @Override

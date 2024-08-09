@@ -152,13 +152,28 @@ public class DurationData {
     public String toString() {
         var builder = new StringBuilder();
         if (days > 0) {
-            builder.append("%dd".formatted(this.days));
+            /* handle rollover from hours */
+            if (isUnitExpected(DurationUnit.DAYS)) {
+                builder.append("%dd".formatted(this.days));
+            } else {
+                hours = hours + Duration.ofDays(days).toHours();
+            }
         }
         if (hours > 0) {
-            builder.append("%dh".formatted(this.hours));
+            /* handle rollover from minutes */
+            if (isUnitExpected(DurationUnit.HOURS)) {
+                builder.append("%dh".formatted(this.hours));
+            } else {
+                minutes = minutes + Duration.ofHours(hours).toMinutes();
+            }
         }
         if (minutes > 0) {
-            builder.append("%dm".formatted(this.minutes));
+            /* handle rollover from seconds */
+            if (isUnitExpected(DurationUnit.MINUTES)) {
+                builder.append("%dm".formatted(this.minutes));
+            } else {
+                seconds = seconds + Duration.ofMinutes(minutes).toSeconds();
+            }
         }
         if (seconds > 0) {
             builder.append("%ds".formatted(this.seconds));

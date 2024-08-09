@@ -74,19 +74,10 @@ public class DurationPickerPopupView extends FlexLayout {
             field.setMax(max);
         }
 
-        field.getElement().addEventListener("mouseWheelUp", event -> {
-            var updatedValue = field.getValue() + field.getStep();
-            if (updatedValue >= field.getMin() && updatedValue <= field.getMax()) {
-                field.setValue(updatedValue);
-            }
-        });
-
-        field.getElement().addEventListener("mouseWheelDown", event -> {
-            var updatedValue = field.getValue() - field.getStep();
-            if (updatedValue >= field.getMin() && updatedValue <= field.getMax()) {
-                field.setValue(updatedValue);
-            }
-        });
+        field.getElement().addEventListener("mouseWheelUp", event -> incrementFieldValue(field));
+        field.getElement().addEventListener("mouseWheelDown", event -> decrementFieldValue(field));
+        field.getElement().addEventListener("touchSwipeUp", event -> incrementFieldValue(field));
+        field.getElement().addEventListener("touchSwipeDown", event -> decrementFieldValue(field));
 
         var dispatchMouseWheelEvents = """
                 const field = $0;
@@ -98,12 +89,46 @@ public class DurationPickerPopupView extends FlexLayout {
                        field.dispatchEvent(new Event('mouseWheelDown'));
                     }
                 });
+
+                field.startY = null;
+
+                field.addEventListener('touchstart', function(e) {
+                    field.startY = e.touches[0].clientY;
+                }, false);
+
+                field.addEventListener('touchmove', function(e) {
+                    if (!field.startY) return;
+                    let moveY = e.touches[0].clientY;
+                    let diffY = field.startY - moveY;
+                    if (Math.abs(diffY) > 30) { // Adjust threshold
+                        if (diffY > 0) {
+                            field.dispatchEvent(new Event('touchSwipeUp'));
+                        } else {
+                            field.dispatchEvent(new Event('touchSwipeDown'));
+                        }
+                        field.startY = null; // Reset startY
+                    }
+                }, false);
                 """;
         UI.getCurrent().getPage().executeJs(dispatchMouseWheelEvents, field.getElement());
 
         this.wrapper.add(field);
 
         return field;
+    }
+
+    private void incrementFieldValue(IntegerField field) {
+        var updatedValue = field.getValue() + field.getStep();
+        if (updatedValue >= field.getMin() && updatedValue <= field.getMax()) {
+            field.setValue(updatedValue);
+        }
+    }
+
+    private void decrementFieldValue(IntegerField field) {
+        var updatedValue = field.getValue() - field.getStep();
+        if (updatedValue >= field.getMin() && updatedValue <= field.getMax()) {
+            field.setValue(updatedValue);
+        }
     }
 
     public DurationData getValue() {
