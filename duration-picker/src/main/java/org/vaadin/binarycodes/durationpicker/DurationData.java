@@ -1,36 +1,40 @@
 package org.vaadin.binarycodes.durationpicker;
 
 import java.time.Duration;
-import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
 public class DurationData {
+
     /* patterns for the manual input */
     private static final String DURATION_PATTERN_REGEX = "(?:(\\d+)d)?(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?(\\d+)?";
     private static final Pattern DURATION_PATTERN = Pattern.compile(DURATION_PATTERN_REGEX);
+    private final Configuration configuration;
 
     private long days;
     private long hours;
     private long minutes;
     private long seconds;
 
-    public DurationData() {
+    private boolean valid;
+
+    public DurationData(Configuration configuration) {
         this.clear();
+        this.configuration = configuration;
     }
 
-    public DurationData(Duration duration) {
+    public DurationData(Configuration configuration, Duration duration) {
+        this(configuration);
         this.days = duration.toDaysPart();
         this.hours = duration.toHoursPart();
         this.minutes = duration.toMinutesPart();
         this.seconds = duration.toSecondsPart();
     }
 
-    public DurationData(String durationString) {
-        /* reset previous value if any */
-        clear();
+    public DurationData(Configuration configuration, String durationString) {
+        this(configuration);
+        this.valid = true;
 
         if (StringUtils.isBlank(durationString)) {
             return;
@@ -41,34 +45,60 @@ public class DurationData {
             return;
         }
 
-        var wrapper = new Object() {
-            Consumer<Long> unmatchedValueConsumer = null;
-        };
-
-        processMatchedGroup(matcher.group(1), this::setDays, this::setHours).ifPresent(u -> wrapper.unmatchedValueConsumer = u);
-        processMatchedGroup(matcher.group(2), this::setHours, this::setMinutes).ifPresent(u -> wrapper.unmatchedValueConsumer = u);
-        processMatchedGroup(matcher.group(3), this::setMinutes, this::setSeconds).ifPresent(u -> wrapper.unmatchedValueConsumer = u);
-        processMatchedGroup(matcher.group(4), this::setSeconds, null).ifPresent(u -> wrapper.unmatchedValueConsumer = u);
+        var processData = new ProcessLocalData();
+        processData = processMatchedGroup(processData, matcher.group(1), DurationUnit.DAYS);
+        processData = processMatchedGroup(processData, matcher.group(2), DurationUnit.HOURS);
+        processData = processMatchedGroup(processData, matcher.group(3), DurationUnit.MINUTES);
+        processData = processMatchedGroup(processData, matcher.group(4), DurationUnit.SECONDS);
 
         /* handle the optional last number */
-        if (matcher.group(5) != null) {
-            if (wrapper.unmatchedValueConsumer != null) {
-                var lastMatchedValue = Long.parseLong(matcher.group(5));
-                wrapper.unmatchedValueConsumer.accept(lastMatchedValue);
-            } else {
-                /* not expecting value without unit here */
-                clear();
-            }
+        if (processData.unmatchedUnit != null) {
+            processMatchedGroup(processData, matcher.group(5), processData.unmatchedUnit);
         }
     }
 
-    private Optional<Consumer<Long>> processMatchedGroup(String matchedValue, Consumer<Long> valueConsumer, Consumer<Long> unmatchedValueConsumer) {
-        if (matchedValue != null) {
-            var value = Long.parseLong(matchedValue);
-            valueConsumer.accept(value);
-            return unmatchedValueConsumer != null ? Optional.of(unmatchedValueConsumer) : Optional.empty();
+    private int stepValueForUnit(DurationUnit unit) {
+        return switch (unit) {
+            case DAYS -> configuration.getDaysStepValue();
+            case HOURS -> configuration.getHoursStepValue();
+            case MINUTES -> configuration.getMinutesStepValue();
+            case SECONDS -> configuration.getSecondsStepValue();
+        };
+    }
+
+    private boolean isUnitExpected(DurationUnit unit) {
+        return configuration.getUnits().contains(unit);
+    }
+
+    private ProcessLocalData processMatchedGroup(ProcessLocalData processData,
+                                                 String matchedValue,
+                                                 DurationUnit unit) {
+        if (matchedValue == null || processData.valueRounded) {
+            if (isUnitExpected(unit)) {
+                /* if unit was expected but not present then the next unit should not be unlimited anymore */
+                return new ProcessLocalData(processData.unmatchedUnit, processData.valueRounded, false);
+            }
+            return processData;
         }
-        return Optional.empty();
+
+        if (!isUnitExpected(unit)) {
+            this.valid = false;
+            return processData;
+        }
+
+        var stepValue = stepValueForUnit(unit);
+
+        var value = Long.parseLong(matchedValue);
+        var mod = value % stepValue;
+        var valueToBeRounded = mod != 0;
+        var finalValue = valueToBeRounded ? value + (stepValue - mod) : value;
+        unit.getValueConsumer().accept(this, finalValue);
+
+        if (!processData.allowUnlimited() && finalValue > unit.getMax()) {
+            this.valid = false;
+        }
+
+        return new ProcessLocalData(unit.getNextUnit().orElse(null), valueToBeRounded, false);
     }
 
     public void clear() {
@@ -114,6 +144,10 @@ public class DurationData {
         this.seconds = seconds;
     }
 
+    public boolean isValid() {
+        return valid;
+    }
+
     @Override
     public String toString() {
         var builder = new StringBuilder();
@@ -130,5 +164,13 @@ public class DurationData {
             builder.append("%ds".formatted(this.seconds));
         }
         return builder.toString();
+    }
+
+    private record ProcessLocalData(DurationUnit unmatchedUnit,
+                                    boolean valueRounded,
+                                    boolean allowUnlimited) {
+        public ProcessLocalData() {
+            this(null, false, true);
+        }
     }
 }

@@ -25,6 +25,8 @@ public class DurationPicker extends CustomField<Duration> {
     /* the eventual value of this field */
     private DurationData value;
 
+    private TextField field;
+
     public DurationPicker() {
         this(new Configuration(Arrays.asList(DurationUnit.values())));
     }
@@ -36,7 +38,7 @@ public class DurationPicker extends CustomField<Duration> {
     private DurationPicker(final Configuration configuration) {
         this.configuration = configuration;
 
-        this.value = new DurationData();
+        this.value = new DurationData(configuration);
         this.textFieldId = UUID.randomUUID().toString();
 
         this.popup = new Popup();
@@ -49,13 +51,27 @@ public class DurationPicker extends CustomField<Duration> {
     }
 
     private void initView() {
-        var field = new TextField("Duration");
-        field.setId(textFieldId);
-        field.setAllowedCharPattern("[0-9hdms]");
-        field.addValueChangeListener(event -> this.value = new DurationData(event.getValue()));
+        this.field = new TextField("Duration");
+        this.field.setId(textFieldId);
+       
+        this.field.setAllowedCharPattern("[0-9hdms]");
+        this.field.addValueChangeListener(event -> {
+            var interimValue = new DurationData(configuration, event.getValue());
+
+            if (interimValue.isValid()) {
+                this.value = interimValue;
+                /* after resolving step values, the input string may be different */
+                if (!event.getValue().equals(this.value.toString())) {
+                    this.field.setValue(this.value.toString());
+                }
+            } else {
+                this.value = new DurationData(this.configuration);
+                this.setInvalid(true);
+            }
+        });
 
         var popupButton = new Button(VaadinIcon.CLOCK.create(), clickEvent -> onPopupOpen(field));
-        field.setSuffixComponent(popupButton);
+        this.field.setSuffixComponent(popupButton);
 
         add(field);
     }
@@ -71,20 +87,32 @@ public class DurationPicker extends CustomField<Duration> {
         this.popup.show();
 
         this.popupCloseRegistration = popup.addPopupOpenChangedEventListener(event -> {
-            value = dialog.getValue();
-            field.setValue(value.toString());
+            field.setValue(dialog.getValue().toString());
             updateValue();
         });
     }
 
     @Override
+    public Duration getEmptyValue() {
+        return new DurationData(this.configuration).getDuration();
+    }
+
+    @Override
     protected Duration generateModelValue() {
-        return value.getDuration();
+        return this.value.getDuration();
     }
 
     @Override
     protected void setPresentationValue(Duration duration) {
-        this.value = new DurationData(duration);
+        this.value = new DurationData(this.configuration, duration);
+    }
+
+    @Override
+    public void setInvalid(boolean invalid) {
+        super.setInvalid(invalid);
+        // There is a timing bug, workaround
+        field.getElement().executeJs("return 0")
+                .then(res -> field.setInvalid(invalid));
     }
 
     public static class Builder {
@@ -104,9 +132,9 @@ public class DurationPicker extends CustomField<Duration> {
             return this;
         }
 
-        public Builder hours(int interval) {
+        public Builder hours(int stepValue) {
             this.configuration.addUnit(DurationUnit.HOURS);
-            this.configuration.setHourInterval(interval);
+            this.configuration.setHoursStepValue(stepValue);
             return this;
         }
 
@@ -115,9 +143,9 @@ public class DurationPicker extends CustomField<Duration> {
             return this;
         }
 
-        public Builder minutes(int interval) {
+        public Builder minutes(int stepValue) {
             this.configuration.addUnit(DurationUnit.MINUTES);
-            this.configuration.setMinuteInterval(interval);
+            this.configuration.setMinutesStepValue(stepValue);
             return this;
         }
 
@@ -126,9 +154,9 @@ public class DurationPicker extends CustomField<Duration> {
             return this;
         }
 
-        public Builder seconds(int interval) {
+        public Builder seconds(int stepValue) {
             this.configuration.addUnit(DurationUnit.SECONDS);
-            this.configuration.setSecondsInterval(interval);
+            this.configuration.setSecondsStepValue(stepValue);
             return this;
         }
 

@@ -22,7 +22,7 @@ public class DurationPickerView extends VerticalLayout implements RouterLayout {
         Stream.of(
                 new DurationPicker(),
                 new DurationPicker.Builder().hours().minutes().seconds().build(),
-                new DurationPicker.Builder().hours(2).minutes(10).seconds(30).build()
+                new DurationPicker.Builder().hours(2).minutes(10).seconds(30).customLabels("D", "H", "M", "S").build()
         ).forEach(this::commonSetup);
     }
 
@@ -36,7 +36,9 @@ public class DurationPickerView extends VerticalLayout implements RouterLayout {
         binder.setBean(data);
 
         var button = new Button("Click me", event -> {
-            Notification.show(data.getDuration().toString());
+            if (binder.validate().isOk()) {
+                Notification.show(data.getDuration().toString());
+            }
         });
 
         add(durationPicker, button);

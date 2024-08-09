@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Configuration {
+    private static final int DEFAULT_STEP_VALUE = 1;
+
     private final List<DurationUnit> units;
-    private int hourInterval;
-    private int minuteInterval;
-    private int secondsInterval;
+    private int hoursStepValue;
+    private int minutesStepValue;
+    private int secondsStepValue;
 
     private String daysLabel;
     private String hoursLabel;
@@ -16,14 +18,14 @@ public class Configuration {
 
     public Configuration() {
         units = new ArrayList<>();
-        hourInterval = 1;
-        minuteInterval = 1;
-        secondsInterval = 1;
+        hoursStepValue = DEFAULT_STEP_VALUE;
+        minutesStepValue = DEFAULT_STEP_VALUE;
+        secondsStepValue = DEFAULT_STEP_VALUE;
 
-        daysLabel = "DD";
-        hoursLabel = "HH";
-        minutesLabel = "MI";
-        secondsLabel = "S";
+        daysLabel = "d";
+        hoursLabel = "h";
+        minutesLabel = "m";
+        secondsLabel = "s";
     }
 
     public Configuration(List<DurationUnit> units) {
@@ -39,28 +41,32 @@ public class Configuration {
         return units;
     }
 
-    public int getHourInterval() {
-        return hourInterval;
+    public int getDaysStepValue() {
+        return DEFAULT_STEP_VALUE;
     }
 
-    public void setHourInterval(int hourInterval) {
-        this.hourInterval = hourInterval;
+    public int getHoursStepValue() {
+        return hoursStepValue;
     }
 
-    public int getMinuteInterval() {
-        return minuteInterval;
+    public void setHoursStepValue(int hoursStepValue) {
+        this.hoursStepValue = hoursStepValue;
     }
 
-    public void setMinuteInterval(int minuteInterval) {
-        this.minuteInterval = minuteInterval;
+    public int getMinutesStepValue() {
+        return minutesStepValue;
     }
 
-    public int getSecondsInterval() {
-        return secondsInterval;
+    public void setMinutesStepValue(int minutesStepValue) {
+        this.minutesStepValue = minutesStepValue;
     }
 
-    public void setSecondsInterval(int secondsInterval) {
-        this.secondsInterval = secondsInterval;
+    public int getSecondsStepValue() {
+        return secondsStepValue;
+    }
+
+    public void setSecondsStepValue(int secondsStepValue) {
+        this.secondsStepValue = secondsStepValue;
     }
 
     public String getDaysLabel() {

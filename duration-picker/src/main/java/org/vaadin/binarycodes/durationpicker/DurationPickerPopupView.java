@@ -1,13 +1,11 @@
 package org.vaadin.binarycodes.durationpicker;
 
 
-import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 @CssImport("./styles/duration-picker-popup-view.css")
@@ -48,29 +46,29 @@ public class DurationPickerPopupView extends FlexLayout {
         }
         if (durationUnits.contains(DurationUnit.HOURS)) {
             var max = allowUnlimited ? 0 : DurationUnit.HOURS.getMax();
-            var field = addInputField(configuration.getHoursLabel(), configuration.getHourInterval(), max);
+            var field = addInputField(configuration.getHoursLabel(), configuration.getHoursStepValue(), max);
             binder.forField(field).withConverter(new IntegerToLongConverter()).bind(DurationData::getHours, DurationData::setHours);
             allowUnlimited = false;
         }
         if (durationUnits.contains(DurationUnit.MINUTES)) {
             var max = allowUnlimited ? 0 : DurationUnit.MINUTES.getMax();
-            var field = addInputField(configuration.getMinutesLabel(), configuration.getMinuteInterval(), max);
+            var field = addInputField(configuration.getMinutesLabel(), configuration.getMinutesStepValue(), max);
             binder.forField(field).withConverter(new IntegerToLongConverter()).bind(DurationData::getMinutes, DurationData::setMinutes);
             allowUnlimited = false;
         }
         if (durationUnits.contains(DurationUnit.SECONDS)) {
             var max = allowUnlimited ? 0 : DurationUnit.SECONDS.getMax();
-            var field = addInputField(configuration.getSecondsLabel(), configuration.getSecondsInterval(), max);
+            var field = addInputField(configuration.getSecondsLabel(), configuration.getSecondsStepValue(), max);
             binder.forField(field).withConverter(new IntegerToLongConverter()).bind(DurationData::getSeconds, DurationData::setSeconds);
             allowUnlimited = false;
         }
     }
 
-    private IntegerField addInputField(String label, int interval, int max) {
+    private IntegerField addInputField(String label, int stepValue, int max) {
         var field = new IntegerField(label);
         field.addThemeNames("duration-picker");
         field.setStepButtonsVisible(true);
-        field.setStep(interval);
+        field.setStep(stepValue);
         field.setMin(0);
         if (max > 0) {
             field.setMax(max);
@@ -112,15 +110,6 @@ public class DurationPickerPopupView extends FlexLayout {
         var data = binder.getBean();
         /* the object is recreated from its own representation of the Duration instance
            this is required to ensure proper rollover, that is 36h is converted to 1d12h */
-        return new DurationData(data.getDuration());
-    }
-
-    public void fireCloseEvent() {
-        var value = getValue();
-        fireEvent(new DialogCloseEvent(this, value));
-    }
-
-    public Registration addDialogCloseEventListener(ComponentEventListener<DialogCloseEvent> listener) {
-        return addListener(DialogCloseEvent.class, listener);
+        return new DurationData(this.configuration, data.getDuration());
     }
 }
