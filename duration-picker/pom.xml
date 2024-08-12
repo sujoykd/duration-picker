@@ -3,6 +3,7 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <groupId>org.vaadin.addons.durationpicker</groupId>
     <artifactId>duration-picker</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
@@ -10,11 +11,9 @@
     <name>duration-picker</name>
     <description>Duration Picker component</description>
 
-    <parent>
-        <groupId>org.vaadin.addons.durationpicker</groupId>
-        <artifactId>duration-picker-root</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-    </parent>
+    <organization>
+        <name>Sujoy Das</name>
+    </organization>
 
     <licenses>
         <license>
@@ -23,6 +22,13 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+
+    <properties>
+        <vaadin.version>24.4.7</vaadin.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
     <repositories>
         <repository>
@@ -34,6 +40,18 @@
         </repository>
     </repositories>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-bom</artifactId>
+                <version>${vaadin.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -44,11 +62,6 @@
             <groupId>com.vaadin.componentfactory</groupId>
             <artifactId>popup</artifactId>
             <version>24.0.5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

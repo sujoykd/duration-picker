@@ -17,41 +17,12 @@
         <module>duration-picker-demo</module>
     </modules>
 
-    <properties>
-        <vaadin.version>24.4.7</vaadin.version>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.6</version>
-    </parent>
-
-    <organization>
-        <name>Sujoy Das</name>
-    </organization>
-
     <scm>
         <url>https://github.com/sujoykd/duration-picker</url>
         <connection>scm:git:https://github.com/sujoykd/duration-picker.git</connection>
         <developerConnection>scm:git:https://github.com/sujoykd/duration-picker.git</developerConnection>
         <tag>v@{project.version}</tag>
     </scm>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.vaadin</groupId>
-                <artifactId>vaadin-bom</artifactId>
-                <version>${vaadin.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <build>
         <pluginManagement>
