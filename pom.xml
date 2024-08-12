@@ -4,7 +4,7 @@
 
     <groupId>org.vaadin.addons.durationpicker</groupId>
     <artifactId>duration-picker-root</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Duration Picker</name>
@@ -19,7 +19,7 @@
         <url>https://github.com/sujoykd/duration-picker</url>
         <connection>scm:git:https://github.com/sujoykd/duration-picker.git</connection>
         <developerConnection>scm:git:https://github.com/sujoykd/duration-picker.git</developerConnection>
-        <tag>v0.0.2</tag>
+        <tag>v@{project.version}</tag>
     </scm>
 
     <build>
