@@ -1,8 +1,8 @@
-package org.vaadin.binarycodes.durationpicker.views;
+package org.vaadin.addons.durationpicker.views;
 
 import java.util.stream.Stream;
 
-import org.vaadin.binarycodes.durationpicker.DurationPicker;
+import org.vaadin.addons.durationpicker.DurationPicker;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.notification.Notification;

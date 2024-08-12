@@ -1,4 +1,4 @@
-package org.vaadin.binarycodes.durationpicker;
+package org.vaadin.addons.durationpicker;
 
 import java.time.Duration;
 import java.util.regex.Pattern;

@@ -1,4 +1,4 @@
-package org.vaadin.binarycodes.durationpicker;
+package org.vaadin.addons.durationpicker;
 
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;

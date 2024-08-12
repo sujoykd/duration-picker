@@ -1,4 +1,4 @@
-package org.vaadin.binarycodes.durationpicker;
+package org.vaadin.addons.durationpicker;
 
 import java.util.ArrayList;
 import java.util.List;

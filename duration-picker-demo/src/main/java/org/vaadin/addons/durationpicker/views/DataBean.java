@@ -1,4 +1,4 @@
-package org.vaadin.binarycodes.durationpicker.views;
+package org.vaadin.addons.durationpicker.views;
 
 import java.time.Duration;
 
